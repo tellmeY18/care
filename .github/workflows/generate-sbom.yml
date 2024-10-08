@@ -1,5 +1,4 @@
 name: Generate SBOM
-
 on: 
   workflow_dispatch:
 
@@ -9,7 +8,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
+        
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -19,9 +18,9 @@ jobs:
         run: |
           pip install cyclonedx-bom
 
-      - name: Run CycloneDX-BOM to generate CycloneDX SBOM
+      - name: Generate CycloneDX SBOM from Python environment
         run: |
-          cyclonedx-bom -o sbom.json
+          cyclonedx-py environment -o sbom.json --schema-version 1.4 --output-format JSON
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v3
