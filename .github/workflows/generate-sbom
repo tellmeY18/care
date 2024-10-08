@@ -1,0 +1,32 @@
+name: Generate SBOM using CycloneDX
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate-sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'  # Set your preferred Python version
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt  # Or 'pipenv install' or 'poetry install'
+
+      - name: Install CycloneDX Python tool
+        run: pip install cyclonedx-bom
+
+      - name: Generate SBOM
+        run: cyclonedx-py --format json -o sbom.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom
+          path: sbom.json
+          if-no-files-found: error
