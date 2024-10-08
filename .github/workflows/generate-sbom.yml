@@ -16,7 +16,7 @@ jobs:
           python-version: '3.x'  # Set your preferred Python version
 
       - name: Install dependencies
-        run: pip install -r requirements.txt  # Or 'pipenv install' or 'poetry install'
+        run: pip install pipenv && pipenv install --deploy --ignore-pipfile
 
       - name: Install CycloneDX Python tool
         run: pip install cyclonedx-bom
