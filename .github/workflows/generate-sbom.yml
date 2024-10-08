@@ -21,7 +21,7 @@ jobs:
 
       - name: Run Scancode Toolkit to generate CycloneDX SBOM
         run: |
-          scancode --json-pp sbom.json --cyclonedx --json-pp-format cyclonedx .
+          scancode --cyclonedx --json-pp sbom.json .
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v3
