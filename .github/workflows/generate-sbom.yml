@@ -13,7 +13,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'  # Set your preferred Python version
+          python-version: '3.x'  # Set your Python version
 
       - name: Install dependencies
         run: pip install pipenv && pipenv install --deploy --ignore-pipfile
@@ -22,7 +22,7 @@ jobs:
         run: pip install cyclonedx-bom
 
       - name: Generate SBOM
-        run: cyclonedx-py pipenv --output-file sbom.json
+        run: cyclonedx-py pipenv --outfile sbom.json --of JSON
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v3
