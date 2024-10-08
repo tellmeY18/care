@@ -18,9 +18,17 @@ jobs:
         run: |
           pip install cyclonedx-bom
 
-      - name: Generate CycloneDX SBOM from Pipfile.lock
+      - name: Create virtual environment
         run: |
-          cyclonedx-py pipenv --outfile sbom.json --schema-version 1.4 --output-format JSON
+          python -m venv venv
+          . venv/bin/activate
+          pip install -r Pipfile.lock  # Install dependencies from Pipfile.lock
+
+      - name: Generate CycloneDX SBOM from the virtual environment
+        run: |
+          # Generate the SBOM from the virtual environment
+          . venv/bin/activate
+          cyclonedx-py environment --outfile sbom.json --schema-version 1.4 --output-format JSON --gather-license-texts
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v3
