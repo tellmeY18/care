@@ -1,34 +1,29 @@
 name: Generate SBOM
 on: 
   workflow_dispatch:
-
 jobs:
   generate-sbom:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
+      - name: Install Pipenv
+        run: |
+          python -m pip install pipenv
+
       - name: Install dependencies
         run: |
-          pip install cyclonedx-bom
+          pipenv install --dev --ignore-pipfile
 
-      - name: Create virtual environment
+      - name: Run CycloneDX-Py to generate CycloneDX SBOM
         run: |
-          python -m venv venv
-          . venv/bin/activate
-          pip install -r Pipfile.lock  # Install dependencies from Pipfile.lock
-
-      - name: Generate CycloneDX SBOM from the virtual environment
-        run: |
-          # Generate the SBOM from the virtual environment
-          . venv/bin/activate
-          cyclonedx-py environment --outfile sbom.json --schema-version 1.4 --output-format JSON --gather-license-texts
+          pipenv run cyclonedx-py environment --outfile sbom.json --schema-version 1.4 --output-format JSON
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v3
