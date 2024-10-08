@@ -21,9 +21,13 @@ jobs:
         run: |
           pipenv install --dev --ignore-pipfile
 
+      - name: Install CycloneDX-Py
+        run: |
+          pipenv install cyclonedx-py
+
       - name: Run CycloneDX-Py to generate CycloneDX SBOM
         run: |
-          pipenv run cyclonedx-py environment --outfile sbom.json --schema-version 1.4 --output-format JSON
+          pipenv run cyclonedx-py environment --outfile sbom.json --schema-version 1.4 --output-format JSON --gather-license-texts
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v3
