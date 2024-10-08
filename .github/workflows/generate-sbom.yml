@@ -18,9 +18,9 @@ jobs:
         run: |
           pip install cyclonedx-bom
 
-      - name: Generate CycloneDX SBOM from Python environment
+      - name: Generate CycloneDX SBOM from Pipfile.lock
         run: |
-          cyclonedx-py environment -o sbom.json --schema-version 1.4 --output-format JSON
+          cyclonedx-py pipenv --outfile sbom.json --schema-version 1.4 --output-format JSON
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v3
