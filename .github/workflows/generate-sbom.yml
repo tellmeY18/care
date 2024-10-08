@@ -1,6 +1,6 @@
-name: Generate SBOM using CycloneDX
+name: Generate SBOM
 
-on:
+on: 
   workflow_dispatch:
 
 jobs:
@@ -13,16 +13,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'  # Set your Python version
+          python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install pipenv && pipenv install --deploy --ignore-pipfile
+        run: pipenv install --dev
 
       - name: Install CycloneDX Python tool
         run: pip install cyclonedx-bom
 
-      - name: Generate SBOM
-        run: cyclonedx-py pipenv --outfile sbom.json --of JSON
+      - name: Generate verbose SBOM
+        run: cyclonedx-py pipenv --output-format json --output-file sbom.json --verbose --include-dev
 
       - name: Upload SBOM
         uses: actions/upload-artifact@v3
