@@ -1,0 +1,44 @@
+[phases.setup]
+nixPkgs = [
+  "python313",
+  "pipenv",
+  "postgresql",
+  "libpq",
+  "gmp",
+  "libjpeg",
+  "zlib",
+  "git",
+  "wget",
+  "curl",
+  "gnupg",
+  "gettext",
+  "gcc",
+  "pkg-config"
+]
+
+[phases.install]
+cmds = [
+  "export TYPST_VERSION=0.12.0",
+  "export TYPST_INSTALL_DIR=/usr/local/bin",
+  "chmod +x scripts/install_typst.sh",
+  "./scripts/install_typst.sh",
+  "pipenv install --deploy --categories packages"
+]
+
+[phases.build]
+cmds = [
+  "python3 install_plugins.py",
+  "python manage.py collectstatic --noinput"
+]
+
+[start]
+cmd = "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+
+[variables]
+PYTHONUNBUFFERED = "1"
+PYTHONDONTWRITEBYTECODE = "1"
+PIPENV_VENV_IN_PROJECT = "1"
+BUILD_ENVIRONMENT = "production"
+PORT = "9000"
+
+[staticDir]
