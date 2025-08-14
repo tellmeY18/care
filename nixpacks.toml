@@ -1,29 +1,11 @@
+providers = ["...", "python"]
+
 [phases.setup]
-nixPkgs = [
-  "python313",
-  "pipenv",
-  "postgresql",
-  "libpq",
-  "gmp",
-  "libjpeg",
-  "zlib",
-  "git",
-  "wget",
-  "curl",
-  "gnupg",
-  "gettext",
-  "gcc",
-  "pkg-config"
-]
+nixPkgs = ["...", "git", "wget", "curl", "gnupg", "gettext", "gcc", "pkg-config", "typst"]
+nixLibs = ["...", "libpq", "zlib", "libjpeg"]
 
 [phases.install]
-cmds = [
-  "export TYPST_VERSION=0.12.0",
-  "export TYPST_INSTALL_DIR=/usr/local/bin",
-  "chmod +x scripts/install_typst.sh",
-  "./scripts/install_typst.sh",
-  "pipenv install --deploy --categories packages"
-]
+cmds = ["...", "pipenv sync --deploy"]
 
 [phases.build]
 cmds = [
@@ -32,13 +14,10 @@ cmds = [
 ]
 
 [start]
-cmd = "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT"
+cmd = "python manage.py migrate && gunicorn config.wsgi:application --bind :$PORT"
 
 [variables]
-PYTHONUNBUFFERED = "1"
-PYTHONDONTWRITEBYTECODE = "1"
+NIXPACKS_PYTHON_VERSION = "3.13"
+PYTHONUNBUFFERED = "1"         # (provider sets this by default too)
+PYTHONDONTWRITEBYTECODE = "1"  # (provider sets this by default too)
 PIPENV_VENV_IN_PROJECT = "1"
-BUILD_ENVIRONMENT = "production"
-PORT = "9000"
-
-[staticDir]
