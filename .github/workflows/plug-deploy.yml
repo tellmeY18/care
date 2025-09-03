@@ -13,8 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  ADDITIONAL_PLUGS: '{"name":"care_scribe","version":"@cleanups","package_name":"git+https://github.com/ohcnetwork/care_scribe.git"},{"name":"abdm","version":"@abdm_phr","package_name":"git+https://github.com/siva222003/care_abdm"}'
-
+  ADDITIONAL_PLUGS: '[{"name":"care_scribe","version":"@cleanups","package_name":"git+https://github.com/ohcnetwork/care_scribe.git"},{"name":"abdm","version":"@abdm_phr","package_name":"git+https://github.com/siva222003/care_abdm"}]'
 jobs:
   build:
     name: Build ${{ matrix.platform }}
