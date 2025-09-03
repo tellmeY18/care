@@ -1,0 +1,14 @@
+name: Print Environment Variables
+
+on:
+  push:
+    branches:
+      - "*"
+  workflow_dispatch:
+jobs:
+  print_env:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print Environment Variables
+        run: |
+          printenv
