@@ -8,7 +8,9 @@ on:
 jobs:
   print_env:
     runs-on: ubuntu-latest
+    environment: plugs
     steps:
       - name: Print Environment Variables
         run: |
           printenv
+          echo "ADDITIONAL_PLUGS=${ADDITIONAL_PLUGS}"
