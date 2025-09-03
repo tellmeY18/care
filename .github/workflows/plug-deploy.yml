@@ -141,8 +141,9 @@ jobs:
             type=raw,value=staging-latest-${{ github.run_number }}-{{date 'YYYYMMDD'}}-{{sha}},enable=${{ github.ref == 'refs/heads/staging' }}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/develop' }}
             type=raw,value=latest-${{ github.run_number }},enable=${{ github.ref == 'refs/heads/develop' }}
+            type=raw,value=plugs-latest,enable=${{ github.ref == 'refs/heads/plug-experiments' }}
+            type=raw,value=plugs-latest-${{ github.run_number }},enable=${{ github.ref == 'refs/heads/plug-experiments' }}
             type=semver,pattern={{version}}
-
       - name: Create manifest list and push
         working-directory: ${{ runner.temp }}/digests
         run: |
