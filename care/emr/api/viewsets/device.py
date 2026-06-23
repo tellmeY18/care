@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from django_filters import rest_framework as filters
 from pydantic import UUID4, BaseModel
@@ -42,6 +43,7 @@ from care.emr.resources.device.spec import (
 from care.emr.resources.encounter.constants import COMPLETED_CHOICES
 from care.facility.models import Facility
 from care.security.authorization import AuthorizationController
+from care.utils.filters.dummy_filter import DummyBooleanFilter
 from care.utils.shortcuts import get_object_or_404
 
 
@@ -49,6 +51,8 @@ class DeviceFilters(filters.FilterSet):
     current_encounter = filters.UUIDFilter(field_name="current_encounter__external_id")
     current_location = filters.UUIDFilter(field_name="current_location__external_id")
     care_type = filters.CharFilter(field_name="care_type")
+    include_children = DummyBooleanFilter()
+    identifier = filters.CharFilter(field_name="identifier", lookup_expr="iexact")
 
 
 class DeviceViewSet(EMRModelViewSet):
@@ -108,7 +112,9 @@ class DeviceViewSet(EMRModelViewSet):
                     instance.care_type
                 )
                 care_device_class().handle_delete(instance)
-            super().perform_destroy(instance)
+            instance.deleted = True
+            instance.updated_by = self.request.user
+            instance.save(update_fields=["deleted", "updated_by", "modified_date"])
 
     def get_queryset(self):
         """
@@ -133,10 +139,26 @@ class DeviceViewSet(EMRModelViewSet):
             location = get_object_or_404(
                 FacilityLocation, external_id=self.request.GET["location"]
             )
+            include_children = (
+                self.request.GET.get("include_children", "false").lower() == "true"
+            )
             if AuthorizationController.call(
                 "can_read_devices_on_location", self.request.user, location
             ):
-                queryset = queryset.filter(current_location=location)
+                if include_children:
+                    queryset = queryset.filter(
+                        Q(current_location=location)
+                        | Q(current_location__parent_cache__overlap=[location.id])
+                    )
+                else:
+                    queryset = queryset.filter(current_location=location)
+            elif include_children:
+                queryset = queryset.filter(
+                    facility_organization_cache__overlap=users_facility_organizations
+                ).filter(
+                    Q(current_location=location)
+                    | Q(current_location__parent_cache__overlap=[location.id])
+                )
             else:
                 queryset = queryset.filter(
                     facility_organization_cache__overlap=users_facility_organizations,
@@ -185,9 +207,13 @@ class DeviceViewSet(EMRModelViewSet):
                 ).first()
                 if old_obj:
                     old_obj.end = timezone.now()
-                    old_obj.save()
+                    old_obj.updated_by = request.user
+                    old_obj.save(update_fields=["end", "updated_by", "modified_date"])
             device.current_encounter = encounter
-            device.save(update_fields=["current_encounter"])
+            device.updated_by = request.user
+            device.save(
+                update_fields=["current_encounter", "updated_by", "modified_date"]
+            )
             if encounter:
                 obj = DeviceEncounterHistory.objects.create(
                     device=device,
@@ -232,9 +258,13 @@ class DeviceViewSet(EMRModelViewSet):
                 ).first()
                 if old_obj:
                     old_obj.end = timezone.now()
-                    old_obj.save()
+                    old_obj.updated_by = request.user
+                    old_obj.save(update_fields=["end", "updated_by", "modified_date"])
             device.current_location = location
-            device.save(update_fields=["current_location"])
+            device.updated_by = request.user
+            device.save(
+                update_fields=["current_location", "updated_by", "modified_date"]
+            )
             if location:
                 obj = DeviceLocationHistory.objects.create(
                     device=device,
@@ -271,8 +301,14 @@ class DeviceViewSet(EMRModelViewSet):
         ).exists():
             raise ValidationError("Organization is already associated with this device")
         device.managing_organization = organization
+        device.updated_by = request.user
         device.save(
-            update_fields=["managing_organization", "facility_organization_cache"]
+            update_fields=[
+                "managing_organization",
+                "facility_organization_cache",
+                "updated_by",
+                "modified_date",
+            ]
         )
         return Response({})
 
@@ -295,8 +331,14 @@ class DeviceViewSet(EMRModelViewSet):
             )
 
         device.managing_organization = None
+        device.updated_by = request.user
         device.save(
-            update_fields=["managing_organization", "facility_organization_cache"]
+            update_fields=[
+                "managing_organization",
+                "facility_organization_cache",
+                "updated_by",
+                "modified_date",
+            ]
         )
         return Response({})
 

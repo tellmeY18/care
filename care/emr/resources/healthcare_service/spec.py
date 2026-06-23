@@ -18,6 +18,8 @@ from care.utils.shortcuts import get_object_or_404
 class HealthcareServiceInternalType(str, Enum):
     pharmacy = "pharmacy"
     lab = "lab"
+    scheduling = "scheduling"
+    store = "store"
 
 
 class BaseHealthcareServiceSpec(EMRResource):
@@ -33,14 +35,14 @@ class BaseHealthcareServiceSpec(EMRResource):
     internal_type: HealthcareServiceInternalType | None = None
     name: str
     styling_metadata: dict = {}
-    extra_details: str = ""
+    extra_details: str
 
 
 class HealthcareServiceWriteSpec(BaseHealthcareServiceSpec):
     """Healthcare service write specification"""
 
     locations: list[UUID4] = []
-    managing_organization: UUID4 | None = None
+    managing_organization: UUID4 | None
 
     def perform_extra_deserialization(self, is_update, obj):
         if self.managing_organization:
@@ -48,6 +50,8 @@ class HealthcareServiceWriteSpec(BaseHealthcareServiceSpec):
                 FacilityOrganization.objects.all().only("id"),
                 external_id=self.managing_organization,
             )
+        else:
+            obj.managing_organization = None
         return super().perform_extra_deserialization(is_update, obj)
 
 
